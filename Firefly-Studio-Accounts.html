@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firefly Studio BD — Accounts &amp; Delivery</title>
+
+<!-- ============================================================
+     THE DATABASE LIVES HERE.
+     This script tag holds all your data. When you save, the whole
+     file (this app + your data) is rewritten to disk. Do not edit
+     this by hand.
+     ============================================================ -->
+<script type="application/json" id="fireflyDB">{"meta":{"business":"Firefly Studio BD","prefix":"FSB-2026-","seq":2,"currency":"৳"},"projects":[{"id":"mqkrcgh6q4qm","createdAt":"2026-06-19","payments":[],"client":"Google","contact":"","title":"","serviceType":"Product Shoot","quoted":10000,"stage":4,"status":"active","deadline":"2026-06-30","notes":"","invoiceNo":"FSB-2026-001"}]}</script>
+
+<style>
+  :root{
+    --bg:#080d0b;
+    --bg2:#0b1310;
+    --panel:#0f1a16;
+    --panel2:#13231d;
+    --line:#1d3329;
+    --emerald:#2fae87;
+    --emerald-dim:#1f7a5c;
+    --gold:#d4af5f;
+    --gold-bright:#ecd28f;
+    --text:#e9efe9;
+    --muted:#8aa093;
+    --muted2:#5e7268;
+    --due:#e0a35a;
+    --danger:#d96a5b;
+    --serif:'Cormorant Garamond','Cormorant',Georgia,'Times New Roman',serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(1200px 700px at 80% -10%,#102019 0%,var(--bg) 55%);
+    color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;min-height:100vh;
+  }
+  canvas#fireflies{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55}
+  #root{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 22px 80px}
+
+  /* ---------- Top bar ---------- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;
+    padding:22px 0 18px;border-bottom:1px solid var(--line);margin-bottom:26px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:14px;min-width:0}
+  .mark{width:40px;height:40px;border-radius:50%;flex:none;
+    background:radial-gradient(circle at 35% 30%,var(--gold-bright),var(--gold) 45%,#7a5e23 100%);
+    box-shadow:0 0 18px rgba(212,175,95,.45),inset 0 0 8px rgba(0,0,0,.3)}
+  .brand h1{font-family:var(--serif);font-weight:600;font-size:26px;letter-spacing:.4px;line-height:1.05}
+  .brand h1 span{color:var(--gold)}
+  .brand .sub{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted2)}
+
+  .filebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .status{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);
+    background:var(--panel);border:1px solid var(--line);padding:7px 12px;border-radius:8px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--muted2);flex:none}
+  .dot.saved{background:var(--emerald);box-shadow:0 0 8px var(--emerald)}
+  .dot.dirty{background:var(--due);box-shadow:0 0 8px var(--due)}
+  .dot.off{background:var(--muted2)}
+
+  button{font-family:var(--sans);cursor:pointer;border:none;border-radius:8px;
+    font-size:13.5px;font-weight:600;padding:9px 15px;transition:.15s;color:var(--text)}
+  .btn-gold{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#241a05;
+    box-shadow:0 4px 14px rgba(212,175,95,.25)}
+  .btn-gold:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  .btn-emerald{background:var(--emerald-dim);color:#fff}
+  .btn-emerald:hover{background:var(--emerald);transform:translateY(-1px)}
+  .btn-ghost{background:var(--panel);border:1px solid var(--line);color:var(--text)}
+  .btn-ghost:hover{border-color:var(--emerald-dim);background:var(--panel2)}
+  .btn-sm{padding:6px 11px;font-size:12.5px}
+  .btn-danger{background:transparent;border:1px solid #4a2a26;color:var(--danger)}
+  .btn-danger:hover{background:#2a1614}
+
+  /* ---------- Dashboard cards ---------- */
+  .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:26px}
+  .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+    border-radius:14px;padding:16px 16px 15px;position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--emerald-dim),transparent);opacity:.6}
+  .card .lab{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+  .card .val{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1;letter-spacing:.3px}
+  .card .val small{font-size:15px;color:var(--muted);font-family:var(--sans);font-weight:500}
+  .card.gold .val{color:var(--gold-bright)}
+  .card.due .val{color:var(--due)}
+  .card.em .val{color:var(--emerald)}
+
+  /* ---------- Controls ---------- */
+  .controls{display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+  .search{flex:1;min-width:220px;position:relative}
+  .search input{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--text);
+    padding:11px 14px 11px 38px;border-radius:9px;font-size:14px;font-family:var(--sans)}
+  .search input:focus{outline:none;border-color:var(--emerald-dim)}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.5}
+  select.filter{background:var(--panel);border:1px solid var(--line);color:var(--text);
+    padding:10px 12px;border-radius:9px;font-size:13.5px;font-family:var(--sans);cursor:pointer}
+  select.filter:focus{outline:none;border-color:var(--emerald-dim)}
+
+  /* ---------- Project cards ---------- */
+  .list{display:flex;flex-direction:column;gap:14px}
+  .proj{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px;transition:.15s}
+  .proj:hover{border-color:#264a3b}
+  .proj-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .proj-title{font-family:var(--serif);font-size:21px;font-weight:600;letter-spacing:.3px}
+  .proj-meta{font-size:12.5px;color:var(--muted);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .chip{font-size:11px;letter-spacing:.5px;padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .chip.svc{border-color:var(--emerald-dim);color:var(--emerald)}
+  .inv{font-family:var(--serif);font-size:13px;color:var(--gold);letter-spacing:.5px}
+
+  .badge{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+    padding:5px 11px;border-radius:7px;white-space:nowrap}
+  .badge.active{background:rgba(47,174,135,.13);color:var(--emerald);border:1px solid rgba(47,174,135,.3)}
+  .badge.delivered{background:rgba(212,175,95,.13);color:var(--gold-bright);border:1px solid rgba(212,175,95,.3)}
+  .badge.closed{background:rgba(138,160,147,.1);color:var(--muted);border:1px solid var(--line)}
+  .badge.lost{background:rgba(217,106,91,.1);color:var(--danger);border:1px solid rgba(217,106,91,.3)}
+
+  /* progress */
+  .prog-wrap{margin:16px 0 14px}
+  .prog-top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:7px}
+  .prog-stage{color:var(--text);font-weight:600}
+  .prog-pct{color:var(--gold);font-family:var(--serif);font-size:16px;font-weight:600}
+  .bar{height:8px;background:#0a1410;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:6px;
+    background:linear-gradient(90deg,var(--emerald-dim),var(--emerald));transition:width .4s ease}
+
+  /* money row */
+  .money{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:14px}
+  .money div{background:var(--panel2);padding:11px 14px}
+  .money .k{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .money .v{font-family:var(--serif);font-size:19px;font-weight:600}
+  .money .v.paid{color:var(--emerald)}
+  .money .v.due{color:var(--due)}
+  .money .v.zero{color:var(--muted)}
+
+  .proj-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .deadline{font-size:12.5px;color:var(--muted);margin-right:auto}
+  .deadline.over{color:var(--danger)}
+
+  .empty{text-align:center;padding:70px 20px;color:var(--muted)}
+  .empty .mark{margin:0 auto 18px}
+  .empty h3{font-family:var(--serif);font-size:24px;color:var(--text);font-weight:600;margin-bottom:8px}
+  .empty p{max-width:440px;margin:0 auto 22px;color:var(--muted);font-size:14px}
+
+  /* ---------- Modal ---------- */
+  .overlay{position:fixed;inset:0;z-index:50;background:rgba(3,7,5,.72);backdrop-filter:blur(4px);
+    display:flex;align-items:flex-start;justify-content:center;padding:40px 18px;overflow-y:auto}
+  .modal{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+    border-radius:16px;width:100%;max-width:560px;padding:26px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  .modal h2{font-family:var(--serif);font-size:24px;font-weight:600;margin-bottom:4px}
+  .modal .mh-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+  .field{margin-bottom:15px}
+  .field label{display:block;font-size:12px;letter-spacing:.6px;text-transform:uppercase;
+    color:var(--muted);margin-bottom:6px}
+  .field input,.field select,.field textarea{width:100%;background:var(--bg2);border:1px solid var(--line);
+    color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;font-family:var(--sans)}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--emerald-dim)}
+  .field textarea{resize:vertical;min-height:60px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+
+  /* payment ledger inside modal */
+  .ledger{margin:6px 0 4px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .ledger-row{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:9px 13px;font-size:13px;border-bottom:1px solid var(--line)}
+  .ledger-row:last-child{border-bottom:none}
+  .ledger-row .lr-amt{font-family:var(--serif);font-size:16px;color:var(--emerald);font-weight:600}
+  .ledger-row .lr-mode{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:2px 8px;border-radius:12px}
+  .ledger-row .lr-date{color:var(--muted)}
+  .ledger-empty{padding:14px;text-align:center;color:var(--muted2);font-size:13px}
+  .del-pay{background:none;border:none;color:var(--muted2);padding:2px 6px;font-size:16px;line-height:1}
+  .del-pay:hover{color:var(--danger)}
+
+  .helpbox{background:var(--bg2);border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.6;margin-top:18px}
+  .helpbox b{color:var(--gold)}
+  .helpbox code{background:#0a1410;border:1px solid var(--line);padding:1px 6px;border-radius:5px;
+    color:var(--emerald);font-size:12px}
+
+  /* ---------- Print statement ---------- */
+  #printArea{display:none}
+  @media print{
+    canvas#fireflies,.topbar,.cards,.controls,.list,.overlay,.footnote{display:none!important}
+    body{background:#fff;color:#111}
+    #printArea{display:block!important;max-width:720px;margin:0 auto;color:#111}
+    #printArea *{color:#111!important}
+  }
+  .ps-head{display:flex;justify-content:space-between;border-bottom:2px solid #c9a24a;padding-bottom:14px;margin-bottom:22px}
+  .ps-head h2{font-family:var(--serif);font-size:30px}
+  .ps-head .ps-biz{text-align:right;font-size:13px;line-height:1.5}
+  .ps-meta{display:flex;justify-content:space-between;font-size:13px;margin-bottom:18px}
+  .ps-table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:13.5px}
+  .ps-table th{text-align:left;border-bottom:1px solid #999;padding:8px 6px;font-size:11px;letter-spacing:1px;text-transform:uppercase}
+  .ps-table td{padding:8px 6px;border-bottom:1px solid #ddd}
+  .ps-table td.r,.ps-table th.r{text-align:right}
+  .ps-tot{margin-left:auto;width:280px;font-size:14px}
+  .ps-tot div{display:flex;justify-content:space-between;padding:6px 0}
+  .ps-tot .due{font-weight:700;border-top:2px solid #c9a24a;margin-top:4px;padding-top:10px;font-size:17px}
+  .ps-foot{margin-top:34px;font-size:11.5px;color:#666;border-top:1px solid #ddd;padding-top:12px}
+
+  .footnote{text-align:center;color:var(--muted2);font-size:12px;margin-top:40px;line-height:1.7}
+
+  @media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.cards{grid-template-columns:1fr 1fr}.money{grid-template-columns:1fr}.row2{grid-template-columns:1fr}
+    .brand h1{font-size:22px}}
+</style>
+</head>
+<body>
+<canvas id="fireflies" width="1280" height="800"></canvas>
+<div id="root"></div>
+<div id="printArea"></div>
+
+<script>
+/* =====================================================================
+   FIREFLY STUDIO BD — Accounts & Delivery Tracker
+   Self-saving single file. The data is stored inside this file.
+   ===================================================================== */
+
+/* ---------- Delivery stages -> progress % ---------- */
+const STAGES = [
+  {n:"Inquiry / Lead",      p:5},
+  {n:"Consultation",        p:10},
+  {n:"Quotation sent",      p:15},
+  {n:"Booking confirmed",   p:25},
+  {n:"Pre-production",      p:35},
+  {n:"Production / Shoot",  p:55},
+  {n:"Post-production",     p:80},
+  {n:"Review & revision",   p:90},
+  {n:"Delivered & closed",  p:100},
+];
+const SERVICES = ["Product Shoot","Reel / Video","Event Coverage","Wedding","Studio Rental","Branding / Marketing","Other"];
+const MODES = ["bKash","Nagad","Bank Transfer","Cash","Card","Other"];
+const STATUSES = ["active","delivered","closed","lost"];
+
+/* ---------- State ---------- */
+let data = loadDB();
+let ui = { modal:null, editId:null, payFor:null, filters:{q:"",status:"",svc:"",sort:"recent"} };
+let fileHandle = null;
+let dirty = false;
+let saveTimer = null;
+
+function loadDB(){
+  try{
+    const raw = document.getElementById('fireflyDB').textContent;
+    const d = JSON.parse(raw);
+    if(!d.meta) d.meta = {business:"Firefly Studio BD",prefix:"FSB-2026-",seq:1,currency:"৳"};
+    if(!Array.isArray(d.projects)) d.projects = [];
+    return d;
+  }catch(e){
+    return {meta:{business:"Firefly Studio BD",prefix:"FSB-2026-",seq:1,currency:"৳"},projects:[]};
+  }
+}
+
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+const cur = () => data.meta.currency || "৳";
+const fmt = n => (cur()) + Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:0});
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const paid = p => (p.payments||[]).reduce((s,x)=>s+Number(x.amount||0),0);
+const due = p => Math.max(0, Number(p.quoted||0) - paid(p));
+const advance = p => (p.payments&&p.payments.length)?Number(p.payments[0].amount||0):0;
+const progressOf = p => p.status==='closed'||p.status==='delivered' ? (STAGES[p.stage]?STAGES[p.stage].p:100) : (STAGES[p.stage]?STAGES[p.stage].p:0);
+
+function todayISO(){const d=new Date();return d.toISOString().slice(0,10);}
+function fmtDate(iso){ if(!iso) return "—"; const d=new Date(iso+"T00:00"); return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+
+/* =====================================================================
+   SAVE / LOAD  — the file is the database
+   ===================================================================== */
+function markDirty(){
+  dirty = true;
+  try{ localStorage.setItem('fireflyAccountsCache', JSON.stringify(data)); }catch(e){}
+  updateStatus();
+  if(fileHandle){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>saveToFile(true),900); }
+}
+
+function buildSaveHTML(){
+  // 1. write current data into the db script
+  const json = JSON.stringify(data).replace(/</g,'\\u003c'); // protect against closing-tag breakout
+  document.getElementById('fireflyDB').textContent = json;
+  // 2. clone the document, empty the dynamic parts so the saved file stays clean
+  const clone = document.documentElement.cloneNode(true);
+  const r = clone.querySelector('#root'); if(r) r.innerHTML='';
+  const pa = clone.querySelector('#printArea'); if(pa) pa.innerHTML='';
+  return '<!DOCTYPE html>\n' + clone.outerHTML;
+}
+
+async function linkFile(){
+  if(!window.showOpenFilePicker){ alert("Your browser can't link files.\n\nOpen this file in Google Chrome (download it first, then double-click), and it will work."); return; }
+  try{
+    const [h] = await window.showOpenFilePicker({
+      types:[{description:'Firefly Accounts file',accept:{'text/html':['.html']}}]
+    });
+    const perm = await h.requestPermission({mode:'readwrite'});
+    if(perm!=='granted'){ alert("Write permission needed to save into the file."); return; }
+    // load data from the picked file (in case it has newer data than this running copy)
+    const f = await h.getFile();
+    const txt = await f.text();
+    const m = txt.match(/<script type="application\/json" id="fireflyDB">([\s\S]*?)<\/script>/);
+    if(m){ try{ const d=JSON.parse(m[1]); if(d&&d.projects){ data=d; if(!data.meta)data.meta={business:"Firefly Studio BD",prefix:"FSB-2026-",seq:1,currency:"৳"}; } }catch(e){} }
+    fileHandle = h;
+    dirty = false;
+    render();
+    await saveToFile(false);
+    toast("Linked to "+h.name+" — auto-save is on");
+  }catch(e){ if(e.name!=='AbortError') console.error(e); }
+}
+
+async function saveAsNewFile(){
+  if(!window.showSaveFilePicker){ alert("Your browser can't save files directly.\n\nOpen this file in Google Chrome and use Link File."); return; }
+  try{
+    const h = await window.showSaveFilePicker({
+      suggestedName:'Firefly-Studio-Accounts.html',
+      types:[{description:'Firefly Accounts file',accept:{'text/html':['.html']}}]
+    });
+    fileHandle = h;
+    await saveToFile(false);
+    toast("Saved as "+h.name+" — auto-save is on");
+  }catch(e){ if(e.name!=='AbortError') console.error(e); }
+}
+
+async function saveToFile(silent){
+  if(!fileHandle){ return saveAsNewFile(); }
+  try{
+    const html = buildSaveHTML();
+    const w = await fileHandle.createWritable();
+    await w.write(html);
+    await w.close();
+    dirty = false;
+    updateStatus();
+    if(!silent) toast("Saved to "+fileHandle.name);
+  }catch(e){
+    console.error(e);
+    toast("Couldn't save — re-link the file", true);
+  }
+}
+
+function updateStatus(){
+  const el = $('#statusEl'); if(!el) return;
+  let dotCls, txt;
+  if(!fileHandle){ dotCls='off'; txt='Not linked — changes in memory only'; }
+  else if(dirty){ dotCls='dirty'; txt='Saving…'; }
+  else { dotCls='saved'; txt='Saved · '+esc(fileHandle.name); }
+  el.innerHTML = '<span class="dot '+dotCls+'"></span>'+txt;
+}
+
+/* tiny toast */
+let toastTimer=null;
+function toast(msg,bad){
+  let t=$('#toast');
+  if(!t){ t=document.createElement('div'); t.id='toast';
+    t.style.cssText='position:fixed;z-index:99;bottom:24px;left:50%;transform:translateX(-50%);background:#0f1a16;border:1px solid var(--line);color:var(--text);padding:11px 18px;border-radius:10px;font-size:13.5px;box-shadow:0 10px 30px rgba(0,0,0,.5);transition:.2s;opacity:0';
+    document.body.appendChild(t); }
+  t.textContent=msg;
+  t.style.borderColor = bad?'#4a2a26':'var(--emerald-dim)';
+  t.style.opacity='1';
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.style.opacity='0',2600);
+}
+
+/* =====================================================================
+   SUMMARY
+   ===================================================================== */
+function summary(){
+  const ps=data.projects;
+  const active = ps.filter(p=>p.status==='active');
+  const pipeline = active.reduce((s,p)=>s+Number(p.quoted||0),0);
+  const received = ps.reduce((s,p)=>s+paid(p),0);
+  const outstanding = ps.filter(p=>p.status!=='lost').reduce((s,p)=>s+due(p),0);
+  const ym = new Date().toISOString().slice(0,7);
+  const month = ps.reduce((s,p)=>s+(p.payments||[]).filter(x=>(x.date||'').slice(0,7)===ym).reduce((a,x)=>a+Number(x.amount||0),0),0);
+  return {count:active.length,pipeline,received,outstanding,month};
+}
+
+/* =====================================================================
+   RENDER
+   ===================================================================== */
+function render(){
+  const s = summary();
+  $('#root').innerHTML = `
+    <div class="topbar">
+      <div class="brand">
+        <div class="mark"></div>
+        <div>
+          <h1>Firefly <span>Studio</span> BD</h1>
+          <div class="sub">Accounts &amp; Service Delivery</div>
+        </div>
+      </div>
+      <div class="filebar">
+        <div class="status" id="statusEl"></div>
+        <button class="btn-ghost btn-sm" data-act="link">Link File</button>
+        <button class="btn-emerald btn-sm" data-act="save">Save</button>
+        <button class="btn-gold" data-act="new">+ New Project</button>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card em"><div class="lab">Active Projects</div><div class="val">${s.count}</div></div>
+      <div class="card"><div class="lab">Pipeline (active)</div><div class="val">${fmt(s.pipeline)}</div></div>
+      <div class="card em"><div class="lab">Total Received</div><div class="val">${fmt(s.received)}</div></div>
+      <div class="card due"><div class="lab">Outstanding Due</div><div class="val">${fmt(s.outstanding)}</div></div>
+      <div class="card gold"><div class="lab">This Month In</div><div class="val">${fmt(s.month)}</div></div>
+    </div>
+
+    <div class="controls">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="searchBox" placeholder="Search client or project…" value="${esc(ui.filters.q)}">
+      </div>
+      <select class="filter" id="fStatus">
+        <option value="">All status</option>
+        ${STATUSES.map(x=>`<option value="${x}" ${ui.filters.status===x?'selected':''}>${x[0].toUpperCase()+x.slice(1)}</option>`).join('')}
+      </select>
+      <select class="filter" id="fSvc">
+        <option value="">All services</option>
+        ${SERVICES.map(x=>`<option value="${x}" ${ui.filters.svc===x?'selected':''}>${x}</option>`).join('')}
+      </select>
+      <select class="filter" id="fSort">
+        <option value="recent" ${ui.filters.sort==='recent'?'selected':''}>Newest first</option>
+        <option value="due" ${ui.filters.sort==='due'?'selected':''}>Highest due</option>
+        <option value="deadline" ${ui.filters.sort==='deadline'?'selected':''}>Deadline soon</option>
+        <option value="progress" ${ui.filters.sort==='progress'?'selected':''}>Progress</option>
+      </select>
+    </div>
+
+    <div class="list" id="list"></div>
+
+    <div class="footnote">
+      This file stores your data inside itself. Keep one master copy in a synced folder (iCloud / Drive).<br>
+      Firefly Studio BD · fireflystudiobd.com
+    </div>
+  `;
+  renderList();
+  updateStatus();
+  if(ui.modal) renderModal();
+}
+
+function filteredProjects(){
+  const f=ui.filters; let ps=data.projects.slice();
+  if(f.q){ const q=f.q.toLowerCase(); ps=ps.filter(p=>(p.client||'').toLowerCase().includes(q)||(p.title||'').toLowerCase().includes(q)||(p.invoiceNo||'').toLowerCase().includes(q)); }
+  if(f.status) ps=ps.filter(p=>p.status===f.status);
+  if(f.svc) ps=ps.filter(p=>p.serviceType===f.svc);
+  if(f.sort==='recent') ps.sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  else if(f.sort==='due') ps.sort((a,b)=>due(b)-due(a));
+  else if(f.sort==='deadline') ps.sort((a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999'));
+  else if(f.sort==='progress') ps.sort((a,b)=>progressOf(b)-progressOf(a));
+  return ps;
+}
+
+function renderList(){
+  const wrap=$('#list'); if(!wrap) return;
+  const ps=filteredProjects();
+  if(!data.projects.length){
+    wrap.innerHTML=`<div class="empty"><div class="mark"></div>
+      <h3>No projects yet</h3>
+      <p>Add your first shoot, reel, or studio booking. Track its delivery stage and money in one place — and link this file so everything saves automatically.</p>
+      <button class="btn-gold" data-act="new">+ New Project</button></div>`;
+    return;
+  }
+  if(!ps.length){ wrap.innerHTML=`<div class="empty"><p>No projects match your filters.</p></div>`; return; }
+  wrap.innerHTML = ps.map(p=>{
+    const pr=progressOf(p), st=STAGES[p.stage]||STAGES[0];
+    const d=due(p), pd=paid(p);
+    const over = p.deadline && p.status==='active' && p.deadline < todayISO();
+    return `<div class="proj">
+      <div class="proj-head">
+        <div style="min-width:0">
+          <div class="proj-title">${esc(p.title||'Untitled')}</div>
+          <div class="proj-meta">
+            <span>${esc(p.client||'—')}</span>
+            <span class="chip svc">${esc(p.serviceType||'—')}</span>
+            ${p.invoiceNo?`<span class="inv">${esc(p.invoiceNo)}</span>`:''}
+          </div>
+        </div>
+        <span class="badge ${p.status}">${p.status}</span>
+      </div>
+
+      <div class="prog-wrap">
+        <div class="prog-top"><span class="prog-stage">${esc(st.n)}</span><span class="prog-pct">${pr}%</span></div>
+        <div class="bar"><i style="width:${pr}%"></i></div>
+      </div>
+
+      <div class="money">
+        <div><div class="k">Quoted</div><div class="v">${fmt(p.quoted)}</div></div>
+        <div><div class="k">Paid</div><div class="v ${pd>0?'paid':'zero'}">${fmt(pd)}</div></div>
+        <div><div class="k">Due</div><div class="v ${d>0?'due':'zero'}">${fmt(d)}</div></div>
+      </div>
+
+      <div class="proj-actions">
+        <span class="deadline ${over?'over':''}">${over?'⚠ Overdue · ':'Deadline · '}${fmtDate(p.deadline)}</span>
+        <button class="btn-emerald btn-sm" data-act="pay" data-id="${p.id}">+ Payment</button>
+        <button class="btn-ghost btn-sm" data-act="edit" data-id="${p.id}">Edit</button>
+        <button class="btn-ghost btn-sm" data-act="print" data-id="${p.id}">Statement</button>
+        <button class="btn-danger btn-sm" data-act="del" data-id="${p.id}">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* =====================================================================
+   MODALS
+   ===================================================================== */
+function openProject(id){ ui.modal='project'; ui.editId=id||null; renderModal(); }
+function openPayment(id){ ui.modal='payment'; ui.payFor=id; renderModal(); }
+function closeModal(){ ui.modal=null; ui.editId=null; ui.payFor=null; const o=$('#overlay'); if(o)o.remove(); }
+
+function renderModal(){
+  const old=$('#overlay'); if(old) old.remove();
+  const ov=document.createElement('div'); ov.className='overlay'; ov.id='overlay';
+  ov.innerHTML = ui.modal==='project' ? projectModalHTML() : paymentModalHTML();
+  document.body.appendChild(ov);
+  ov.addEventListener('mousedown',e=>{ if(e.target===ov) closeModal(); });
+}
+
+function projectModalHTML(){
+  const p = ui.editId ? data.projects.find(x=>x.id===ui.editId) : null;
+  const isEdit=!!p;
+  return `<div class="modal">
+    <h2>${isEdit?'Edit Project':'New Project'}</h2>
+    <div class="mh-sub">${isEdit?esc(p.invoiceNo||''):'A new invoice number is assigned automatically.'}</div>
+
+    <div class="row2">
+      <div class="field"><label>Client name</label><input id="m_client" value="${esc(p?.client)}" placeholder="e.g. Royal Malabar Jewellers"></div>
+      <div class="field"><label>Contact (phone / FB)</label><input id="m_contact" value="${esc(p?.contact)}" placeholder="+880…"></div>
+    </div>
+    <div class="field"><label>Project title</label><input id="m_title" value="${esc(p?.title)}" placeholder="e.g. Eid Gold Collection — Product Shoot"></div>
+    <div class="row2">
+      <div class="field"><label>Service type</label><select id="m_svc">${SERVICES.map(x=>`<option ${p?.serviceType===x?'selected':''}>${x}</option>`).join('')}</select></div>
+      <div class="field"><label>Quoted amount (${cur()})</label><input id="m_quoted" type="number" min="0" value="${p?.quoted??''}" placeholder="0"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Delivery stage</label><select id="m_stage">${STAGES.map((s,i)=>`<option value="${i}" ${(p?p.stage:0)==i?'selected':''}>${i+1}. ${s.n} (${s.p}%)</option>`).join('')}</select></div>
+      <div class="field"><label>Status</label><select id="m_status">${STATUSES.map(x=>`<option ${ (p?p.status:'active')===x?'selected':''}>${x}</option>`).join('')}</select></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Deadline</label><input id="m_deadline" type="date" value="${esc(p?.deadline)}"></div>
+      <div class="field"><label>Invoice no.</label><input id="m_inv" value="${esc(p?.invoiceNo)}" placeholder="auto"></div>
+    </div>
+    <div class="field"><label>Notes</label><textarea id="m_notes" placeholder="Scope, revisions allowed, references…">${esc(p?.notes)}</textarea></div>
+
+    ${isEdit?'':`<div class="field"><label>Advance received now (optional)</label><input id="m_adv" type="number" min="0" placeholder="e.g. 50% to confirm booking"></div>`}
+
+    <div class="modal-foot">
+      <button class="btn-ghost" data-act="close">Cancel</button>
+      <button class="btn-gold" data-act="saveProject">${isEdit?'Save changes':'Create project'}</button>
+    </div>
+  </div>`;
+}
+
+function paymentModalHTML(){
+  const p=data.projects.find(x=>x.id===ui.payFor); if(!p) return '';
+  const list=(p.payments||[]);
+  return `<div class="modal">
+    <h2>Payments</h2>
+    <div class="mh-sub">${esc(p.title||'')} · ${esc(p.client||'')}</div>
+
+    <div class="money" style="margin-bottom:18px">
+      <div><div class="k">Quoted</div><div class="v">${fmt(p.quoted)}</div></div>
+      <div><div class="k">Paid</div><div class="v paid">${fmt(paid(p))}</div></div>
+      <div><div class="k">Due</div><div class="v due">${fmt(due(p))}</div></div>
+    </div>
+
+    <div class="ledger">
+      ${list.length? list.map(x=>`
+        <div class="ledger-row">
+          <span class="lr-date">${fmtDate(x.date)}</span>
+          <span class="lr-mode">${esc(x.mode||'')}</span>
+          <span style="flex:1;color:var(--muted);font-size:12px">${esc(x.note||'')}</span>
+          <span class="lr-amt">${fmt(x.amount)}</span>
+          <button class="del-pay" data-act="delPay" data-pid="${x.id}" title="Remove">×</button>
+        </div>`).join('')
+      : `<div class="ledger-empty">No payments recorded yet.</div>`}
+    </div>
+
+    <div class="row2" style="margin-top:18px">
+      <div class="field"><label>Amount (${cur()})</label><input id="pay_amt" type="number" min="0" placeholder="0"></div>
+      <div class="field"><label>Date</label><input id="pay_date" type="date" value="${todayISO()}"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Mode</label><select id="pay_mode">${MODES.map(x=>`<option>${x}</option>`).join('')}</select></div>
+      <div class="field"><label>Note</label><input id="pay_note" placeholder="e.g. advance, final balance"></div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn-ghost" data-act="close">Done</button>
+      <button class="btn-emerald" data-act="addPay">Add payment</button>
+    </div>
+  </div>`;
+}
+
+/* =====================================================================
+   MUTATIONS
+   ===================================================================== */
+function nextInvoice(){
+  const seq=data.meta.seq||1;
+  const no=(data.meta.prefix||'FSB-2026-')+String(seq).padStart(3,'0');
+  return no;
+}
+function saveProject(){
+  const g=id=>$('#'+id);
+  const isEdit=!!ui.editId;
+  let p = isEdit ? data.projects.find(x=>x.id===ui.editId) : {id:uid(),createdAt:todayISO(),payments:[]};
+  p.client=g('m_client').value.trim();
+  p.contact=g('m_contact').value.trim();
+  p.title=g('m_title').value.trim();
+  p.serviceType=g('m_svc').value;
+  p.quoted=Number(g('m_quoted').value||0);
+  p.stage=Number(g('m_stage').value||0);
+  p.status=g('m_status').value;
+  p.deadline=g('m_deadline').value;
+  p.notes=g('m_notes').value.trim();
+  let inv=g('m_inv').value.trim();
+  if(!p.title&&!p.client){ toast("Add a client or title first",true); return; }
+  if(!isEdit){
+    if(!inv){ inv=nextInvoice(); data.meta.seq=(data.meta.seq||1)+1; }
+    p.invoiceNo=inv;
+    const adv=Number((g('m_adv')||{value:0}).value||0);
+    if(adv>0) p.payments.push({id:uid(),date:todayISO(),amount:adv,mode:'bKash',note:'Advance'});
+    data.projects.unshift(p);
+  }else{
+    p.invoiceNo=inv||p.invoiceNo;
+  }
+  closeModal(); markDirty(); render();
+  toast(isEdit?"Project updated":"Project created");
+}
+function addPayment(){
+  const p=data.projects.find(x=>x.id===ui.payFor); if(!p) return;
+  const amt=Number($('#pay_amt').value||0);
+  if(amt<=0){ toast("Enter an amount",true); return; }
+  if(!p.payments) p.payments=[];
+  p.payments.push({id:uid(),date:$('#pay_date').value||todayISO(),amount:amt,mode:$('#pay_mode').value,note:$('#pay_note').value.trim()});
+  markDirty(); renderModal(); renderList();
+  $('#root') && updateCards();
+  toast("Payment added");
+}
+function delPayment(pid){
+  const p=data.projects.find(x=>x.id===ui.payFor); if(!p) return;
+  p.payments=(p.payments||[]).filter(x=>x.id!==pid);
+  markDirty(); renderModal(); renderList(); updateCards();
+}
+function delProject(id){
+  const p=data.projects.find(x=>x.id===id);
+  if(!confirm("Delete \""+(p?.title||'this project')+"\"? This can't be undone unless you re-open an older saved copy.")) return;
+  data.projects=data.projects.filter(x=>x.id!==id);
+  markDirty(); render();
+  toast("Project deleted");
+}
+function updateCards(){
+  // refresh just the dashboard numbers without full re-render
+  const s=summary();
+  const cards=document.querySelectorAll('.cards .val');
+  if(cards.length===5){
+    cards[0].textContent=s.count;
+    cards[1].textContent=fmt(s.pipeline);
+    cards[2].textContent=fmt(s.received);
+    cards[3].textContent=fmt(s.outstanding);
+    cards[4].textContent=fmt(s.month);
+  }
+}
+
+/* =====================================================================
+   PRINT STATEMENT
+   ===================================================================== */
+function printStatement(id){
+  const p=data.projects.find(x=>x.id===id); if(!p) return;
+  const rows=(p.payments||[]).map(x=>`<tr><td>${fmtDate(x.date)}</td><td>${esc(x.mode||'')}</td><td>${esc(x.note||'')}</td><td class="r">${fmt(x.amount)}</td></tr>`).join('')
+    || `<tr><td colspan="4" style="color:#999">No payments recorded.</td></tr>`;
+  $('#printArea').innerHTML=`
+    <div class="ps-head">
+      <div><h2>Statement</h2><div style="font-size:13px;color:#666">${esc(p.invoiceNo||'')}</div></div>
+      <div class="ps-biz"><b>Firefly Studio BD</b><br>House 15, Road 17, Sector 4<br>Uttara, Dhaka-1230<br>+880 1971 961962<br>fireflystudiobd.com</div>
+    </div>
+    <div class="ps-meta">
+      <div><b>Bill to</b><br>${esc(p.client||'—')}<br>${esc(p.contact||'')}</div>
+      <div style="text-align:right"><b>Project</b><br>${esc(p.title||'')}<br>${esc(p.serviceType||'')}<br>Date: ${fmtDate(todayISO())}</div>
+    </div>
+    <table class="ps-table">
+      <thead><tr><th>Date</th><th>Mode</th><th>Note</th><th class="r">Amount</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="ps-tot">
+      <div><span>Quoted total</span><span>${fmt(p.quoted)}</span></div>
+      <div><span>Total received</span><span>${fmt(paid(p))}</span></div>
+      <div class="due"><span>Balance due</span><span>${fmt(due(p))}</span></div>
+    </div>
+    <div class="ps-foot">Thank you for working with Firefly Studio BD. Final high-resolution files are released upon full payment.</div>
+  `;
+  window.print();
+}
+
+/* =====================================================================
+   EVENTS
+   ===================================================================== */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const act=b.dataset.act, id=b.dataset.id;
+  if(act==='new') openProject(null);
+  else if(act==='edit') openProject(id);
+  else if(act==='pay') openPayment(id);
+  else if(act==='print') printStatement(id);
+  else if(act==='del') delProject(id);
+  else if(act==='close') closeModal();
+  else if(act==='saveProject') saveProject();
+  else if(act==='addPay') addPayment();
+  else if(act==='delPay') delPayment(b.dataset.pid);
+  else if(act==='link') linkFile();
+  else if(act==='save') saveToFile(false);
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='searchBox'){ ui.filters.q=e.target.value; renderList(); }
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='fStatus'){ ui.filters.status=e.target.value; renderList(); }
+  else if(e.target.id==='fSvc'){ ui.filters.svc=e.target.value; renderList(); }
+  else if(e.target.id==='fSort'){ ui.filters.sort=e.target.value; renderList(); }
+});
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='s'){ e.preventDefault(); saveToFile(false); }
+  if(e.key==='Escape'&&ui.modal) closeModal();
+});
+window.addEventListener('beforeunload',e=>{
+  if(dirty && !fileHandle){ e.preventDefault(); e.returnValue=''; }
+});
+
+/* offer to restore crash cache if this copy is empty */
+(function restoreCheck(){
+  try{
+    if(!data.projects.length){
+      const c=localStorage.getItem('fireflyAccountsCache');
+      if(c){ const d=JSON.parse(c); if(d&&d.projects&&d.projects.length){
+        if(confirm("Found unsaved data from a previous session in this browser. Restore it?")){ data=d; }
+      }}
+    }
+  }catch(e){}
+})();
+
+/* =====================================================================
+   FIREFLY BACKGROUND
+   ===================================================================== */
+(function fireflies(){
+  const c=document.getElementById('fireflies'); const x=c.getContext('2d');
+  let w,h,parts;
+  function size(){ w=c.width=innerWidth; h=c.height=innerHeight;
+    parts=Array.from({length:Math.min(34,Math.floor(w/45))},()=>({
+      x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.6+.6,
+      vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,
+      ph:Math.random()*Math.PI*2,sp:Math.random()*.02+.008})); }
+  size(); addEventListener('resize',size);
+  let run=true; document.addEventListener('visibilitychange',()=>{run=!document.hidden; if(run)loop();});
+  function loop(){ if(!run)return;
+    x.clearRect(0,0,w,h);
+    for(const p of parts){
+      p.x+=p.vx; p.y+=p.vy; p.ph+=p.sp;
+      if(p.x<0)p.x=w; if(p.x>w)p.x=0; if(p.y<0)p.y=h; if(p.y>h)p.y=0;
+      const a=(Math.sin(p.ph)*.5+.5)*.7+.15;
+      x.beginPath(); x.arc(p.x,p.y,p.r,0,7);
+      const g=x.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*5);
+      g.addColorStop(0,`rgba(236,210,143,${a})`); g.addColorStop(1,'rgba(236,210,143,0)');
+      x.fillStyle=g; x.arc(p.x,p.y,p.r*5,0,7); x.fill();
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* go */
+render();
+</script>
+
+
+<div id="toast" style="position: fixed; z-index: 99; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgb(15, 26, 22); border-color: var(--emerald-dim); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; color: var(--text); padding: 11px 18px; border-radius: 10px; font-size: 13.5px; box-shadow: rgba(0, 0, 0, 0.5) 0px 10px 30px; transition: 0.2s; opacity: 1;">Project updated</div></body></html>
