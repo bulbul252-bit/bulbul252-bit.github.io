@@ -10,7 +10,7 @@
      file (this app + your data) is rewritten to disk. Do not edit
      this by hand.
      ============================================================ -->
-<script type="application/json" id="fireflyDB">{"meta":{"business":"Firefly Studio BD","prefix":"FSB-2026-","seq":2,"currency":"৳"},"projects":[{"id":"mqkrcgh6q4qm","createdAt":"2026-06-19","payments":[{"id":"mqksvdg9ve83","date":"2026-06-19","amount":6000,"mode":"bKash","note":""}],"client":"Google","contact":"","title":"","serviceType":"Studio Rental","quoted":10000,"stage":6,"status":"active","deadline":"2026-06-30","notes":"","invoiceNo":"FSB-2026-001"}]}</script>
+<script type="application/json" id="fireflyDB">{"meta":{"business":"Firefly Studio BD","prefix":"FSB-2026-","seq":2,"currency":"৳"},"projects":[{"id":"mqkrcgh6q4qm","createdAt":"2026-06-19","payments":[{"id":"mqksvdg9ve83","date":"2026-06-19","amount":6000,"mode":"bKash","note":""},{"id":"mqkt0gov59g9","date":"2026-06-19","amount":4000,"mode":"bKash","note":""}],"client":"Google","contact":"","title":"","serviceType":"Studio Rental","quoted":10000,"stage":8,"status":"closed","deadline":"2026-06-30","notes":"","invoiceNo":"FSB-2026-001"}]}</script>
 
 <style>
   :root{
@@ -776,8 +776,8 @@ render();
 
     <div class="money" style="margin-bottom:18px">
       <div><div class="k">Quoted</div><div class="v">৳10,000</div></div>
-      <div><div class="k">Paid</div><div class="v paid">৳6,000</div></div>
-      <div><div class="k">Due</div><div class="v due">৳4,000</div></div>
+      <div><div class="k">Paid</div><div class="v paid">৳10,000</div></div>
+      <div><div class="k">Due</div><div class="v due">৳0</div></div>
     </div>
 
     <div class="ledger">
@@ -788,6 +788,13 @@ render();
           <span style="flex:1;color:var(--muted);font-size:12px"></span>
           <span class="lr-amt">৳6,000</span>
           <button class="del-pay" data-act="delPay" data-pid="mqksvdg9ve83" title="Remove">×</button>
+        </div>
+        <div class="ledger-row">
+          <span class="lr-date">19 Jun 2026</span>
+          <span class="lr-mode">bKash</span>
+          <span style="flex:1;color:var(--muted);font-size:12px"></span>
+          <span class="lr-amt">৳4,000</span>
+          <button class="del-pay" data-act="delPay" data-pid="mqkt0gov59g9" title="Remove">×</button>
         </div>
     </div>
 
